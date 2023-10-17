@@ -1,55 +1,22 @@
 import { useContext } from "react";
 import { GameContext } from "../../context/GameContext";
+import stylesCommon from "../../styles/common.module.scss";
+import styles from "./GameBoard.module.scss";
 
 export const GameBoard = () => {
-  const { highScore, remainingTotalTime } = useContext(GameContext);
+  const { highScore, remainingTotalTime, score } = useContext(GameContext);
   return (
-    <div style={style.container}>
-      <div style={style.containerItem}>
+    <div className={stylesCommon.container}>
+      <div className={stylesCommon.containerItem}>
         REMAINING TIME: {remainingTotalTime}
       </div>
-      <div
-        style={{
-          ...style.containerItem,
-          borderLeftWidth: 0,
-          borderRightWidth: 0,
-        }}
-      >
-        RESET
+      <div className={stylesCommon.containerItem}>
+        <button>RESET</button>
       </div>
-      <div style={{ ...style.containerItem, flexDirection: "column" }}>
-        <div
-          style={{
-            borderWidth: 0,
-            borderBottomWidth: 2,
-            borderColor: "red",
-            borderStyle: "solid",
-          }}
-        >
-          HIGH SCORE: {highScore}
-        </div>
-        <div>SCORE</div>
+      <div className={stylesCommon.containerItem}>
+        <div className={styles.score}>HIGH SCORE: {highScore}</div>
+        <div>SCORE: {score}</div>
       </div>
     </div>
   );
-};
-
-const style = {
-  container: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    // backgroundColor: "#000",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  containerItem: {
-    display: "flex",
-    flex: 1,
-    alignSelf: "stretch",
-    borderWidth: 2,
-    borderColor: "red",
-    borderStyle: "solid",
-  },
 };
