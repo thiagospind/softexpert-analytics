@@ -1,35 +1,76 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "normalize.css";
+import "./App.css";
+import { SideBar } from "./components/SideBar";
+import { Container } from "./components/Container";
+import { GameBoard } from "./components/GameBoard";
+import { GameContext } from "./context/GameContext";
+import { useEffect, useState } from "react";
+import { ProgressBar } from "./components/ProgressBar";
+import { BoardColor } from "./components/BoardColor";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [highScore, setHighScore] = useState(0);
+  const [remainingTotalTime, setRemainingTotaltime] = useState(30);
+  const [score, setScore] = useState(0);
+  const [isActiveGame, setIsActiveGame] = useState(false);
+  const [intervalId, setIntervalId] = useState();
+
+  useEffect(() => {
+    if (isActiveGame) {
+      const aux = setInterval(() => {
+        setRemainingTotaltime((prevState) => prevState - 1);
+      }, 1000);
+      setIntervalId(aux);
+    } else if (intervalId) {
+      clearInterval(intervalId);
+    }
+  }, [isActiveGame]);
+
+  useEffect(() => {
+    if (remainingTotalTime <= 0) {
+      setRemainingTotaltime(30);
+      setIsActiveGame(false);
+    }
+  }, [remainingTotalTime]);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <GameContext.Provider
+      value={{
+        highScore,
+        setHighScore,
+        remainingTotalTime,
+        setRemainingTotaltime,
+        score,
+        setScore,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "stretch",
+        }}
+      >
+        <SideBar />
+        <Container>
+          <div>
+            <h1>Guess the color</h1>
+            <GameBoard />
+            <ProgressBar />
+            <BoardColor isActiveGame={isActiveGame}>
+              {!isActiveGame ? (
+                <button onClick={() => setIsActiveGame(!isActiveGame)}>
+                  Start
+                </button>
+              ) : null}
+            </BoardColor>
+          </div>
+        </Container>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </GameContext.Provider>
+  );
 }
 
-export default App
+export default App;

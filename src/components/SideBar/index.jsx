@@ -1,3 +1,9 @@
+import "./Sidebar.css";
+
 export const SideBar = () => {
-  return <aside></aside>;
+  return (
+    <aside className="sidebar">
+      <h2>Current/Latest game</h2>
+    </aside>
+  );
 };
