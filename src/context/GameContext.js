@@ -7,6 +7,7 @@ export const GameContext = React.createContext({
   score: 0,
   currentColor: "",
   colorOptions: [],
+  gameHistory: [],
 
   setRemainingTotaltime: () => {},
   setRemainingTime: () => {},
@@ -15,4 +16,7 @@ export const GameContext = React.createContext({
   setCurrentColor: () => {},
   setColorOptions: () => {},
   checkAnswer: () => {},
+  startGame: () => {},
+  endGame: () => {},
+  setGameHistory: () => {},
 });

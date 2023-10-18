@@ -1,5 +1,6 @@
 import "normalize.css";
 import "./App.css";
+import styles from "./App.module.scss";
 import { SideBar } from "./components/SideBar";
 import { Container } from "./components/Container";
 import { GameBoard } from "./components/GameBoard";
@@ -48,28 +49,41 @@ function App() {
       setHighScore(score);
       localStorage.setItem("highScore", score);
     }
+    setGameHistory([]);
   };
 
   const checkAnswer = (color) => {
     console.log(color, currentColor);
     if (color === currentColor) {
       setScore((prevState) => Math.max(0, prevState + 5));
-      addToHistory(currentColor, true, 10 - remainingTime);
+      addToHistory(color, currentColor, true, 10 - remainingTime);
     } else {
       setScore((prev) => Math.max(0, prev - 1));
-      addToHistory(currentColor, false, 10 - remainingTime);
+      addToHistory(color, currentColor, false, 10 - remainingTime);
     }
     setCurrentColor(generateRandomColor());
     setRemainingTime(10);
   };
 
-  const addToHistory = (color, correct, time) => {
-    setGameHistory((prevState) => [...prevState, { color, correct, time }]);
+  const addToHistory = (color, currentColor, correct, time) => {
+    setGameHistory((prevState) => [
+      { color, currentColor, correct, time },
+      ...prevState,
+    ]);
   };
 
   useEffect(() => {
     if (isActiveGame) {
       const interval = setInterval(() => {
+        setRemainingTime((prevState) => {
+          if (prevState <= 0) {
+            setScore((score) => Math.max(0, score - 2));
+            addToHistory(currentColor, false, 10);
+            setCurrentColor(generateRandomColor());
+            return 10;
+          }
+          return prevState - 1;
+        });
         setRemainingTotaltime((prevState) => prevState - 1);
       }, 1000);
       setIntervalId(interval);
@@ -106,26 +120,21 @@ function App() {
         setScore,
         colorOptions,
         checkAnswer,
+        endGame,
+        gameHistory,
+        currentColor,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "row",
-          width: "100%",
-          justifyContent: "stretch",
-        }}
-      >
+      <div className={styles.main}>
         <SideBar />
         <Container>
           <div>
-            <h1>Guess the color</h1>
+            <h2>Guess the color</h2>
             <GameBoard />
             <ProgressBar />
             <ColorBoard bgColor={currentColor}>
               {!isActiveGame ? (
-                <button onClick={() => startGame()}>Start</button>
+                <button onClick={startGame}>Start</button>
               ) : null}
             </ColorBoard>
             {isActiveGame && <SelectColor />}
