@@ -5,3 +5,12 @@
   width: 100%;
   justify-content: stretch;
 }
+
+.container {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}

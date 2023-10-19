@@ -2,10 +2,9 @@ import "normalize.css";
 import "./App.css";
 import styles from "./App.module.scss";
 import { SideBar } from "./components/SideBar";
-import { Container } from "./components/Container";
 import { GameBoard } from "./components/GameBoard";
 import { GameContext } from "./context/GameContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ProgressBar } from "./components/ProgressBar";
 import { ColorBoard } from "./components/ColorBoard";
 import { SelectColor } from "./components/SelectColor";
@@ -19,16 +18,32 @@ const getHighScore = () => {
   return localStorage.getItem("highScore") || 0;
 };
 
+const saveLocalHighScore = (score) => {
+  localStorage.setItem("highScore", score);
+};
+
+const loadLastGame = () => {
+  const lastGame = localStorage.getItem("lastGame");
+  if (lastGame) {
+    return JSON.parse(lastGame) || [];
+  }
+};
+
 function App() {
-  const [highScore, setHighScore] = useState(getHighScore());
+  const [highScore, setHighScore] = useState(getHighScore() || 0);
   const [score, setScore] = useState("-");
   const [remainingTotalTime, setRemainingTotaltime] = useState(30);
   const [remainingTime, setRemainingTime] = useState(10);
   const [isActiveGame, setIsActiveGame] = useState(false);
-  const [intervalId, setIntervalId] = useState();
+  // const [intervalId, setIntervalId] = useState();
   const [currentColor, setCurrentColor] = useState();
   const [colorOptions, setColorOptions] = useState([]);
-  const [gameHistory, setGameHistory] = useState([]);
+  const [gameHistory, setGameHistory] = useState(loadLastGame());
+
+  const saveLastGame = () => {
+    console.log(gameHistory);
+    localStorage.setItem("lastGame", JSON.stringify(gameHistory));
+  };
 
   const startGame = () => {
     setIsActiveGame(true);
@@ -36,67 +51,136 @@ function App() {
     setRemainingTime(10);
     setRemainingTotaltime(30);
     setCurrentColor(generateRandomColor());
-    setHighScore(localStorage.getItem("highScore") || 0);
+    setHighScore(getHighScore() || 0);
+    setGameHistory([]);
   };
 
   const endGame = () => {
-    setRemainingTotaltime(30);
     setIsActiveGame(false);
+    setRemainingTotaltime(30);
     setColorOptions([]);
     setCurrentColor("#ccc");
     setScore("-");
     if (score > highScore) {
       setHighScore(score);
-      localStorage.setItem("highScore", score);
+      saveLocalHighScore(score);
     }
-    setGameHistory([]);
+    console.log({ gameHistory });
+    setGameHistory(gameHistory);
+    saveLastGame();
+  };
+
+  const fontColorByLuminosity = (hex) => {
+    hex = hex.replace(/^#/, "");
+
+    // Converte o valor hexadecimal para valores de R, G e B
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    // Calcula a luminosidade
+    const luminosity = 0.299 * r + 0.587 * g + 0.114 * b;
+
+    return luminosity > 128 ? "#000" : "#fff";
   };
 
   const checkAnswer = (color) => {
-    console.log(color, currentColor);
     if (color === currentColor) {
       setScore((prevState) => Math.max(0, prevState + 5));
-      addToHistory(color, currentColor, true, 10 - remainingTime);
+      addToHistory(
+        color,
+        fontColorByLuminosity(color),
+        currentColor,
+        fontColorByLuminosity(currentColor),
+        true,
+        10 - remainingTime
+      );
     } else {
       setScore((prev) => Math.max(0, prev - 1));
-      addToHistory(color, currentColor, false, 10 - remainingTime);
+      addToHistory(
+        color,
+        fontColorByLuminosity(color),
+        currentColor,
+        fontColorByLuminosity(currentColor),
+        false,
+        10 - remainingTime
+      );
     }
     setCurrentColor(generateRandomColor());
     setRemainingTime(10);
   };
 
-  const addToHistory = (color, currentColor, correct, time) => {
+  const addToHistory = (
+    color,
+    fontColor,
+    currentColor,
+    currentFontColor,
+    correct,
+    time
+  ) => {
     setGameHistory((prevState) => [
-      { color, currentColor, correct, time },
+      {
+        color,
+        fontColor,
+        currentColor,
+        currentFontColor,
+        correct,
+        time,
+      },
       ...prevState,
     ]);
   };
 
   useEffect(() => {
-    if (isActiveGame) {
-      const interval = setInterval(() => {
+    console.log({ gameHistory });
+  }, [gameHistory]);
+
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (isActiveGame && !intervalRef.current) {
+      intervalRef.current = setInterval(() => {
         setRemainingTime((prevState) => {
-          if (prevState <= 0) {
+          if (prevState <= 1) {
             setScore((score) => Math.max(0, score - 2));
-            addToHistory(currentColor, false, 10);
-            setCurrentColor(generateRandomColor());
+            const newColor = generateRandomColor();
+            setCurrentColor((preState) => {
+              addToHistory(
+                "#FF000080",
+                fontColorByLuminosity("#FF000080"),
+                preState,
+                fontColorByLuminosity(preState),
+                false,
+                10
+              );
+              return newColor;
+            });
+            setRemainingTime(10);
             return 10;
           }
           return prevState - 1;
         });
-        setRemainingTotaltime((prevState) => prevState - 1);
+        setRemainingTotaltime((prevState) => {
+          if (prevState <= 0) {
+            console.log("end game");
+            console.log({ gameHistory });
+            endGame();
+            return 0;
+          }
+          return prevState - 1;
+        });
       }, 1000);
-      setIntervalId(interval);
-    } else if (intervalId) {
-      clearInterval(intervalId);
+    } else if (!isActiveGame && intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-  }, [isActiveGame]);
+  }, [isActiveGame, currentColor]);
 
-  useEffect(() => {
-    if (remainingTotalTime <= 0) {
-      endGame();
-    }
-  }, [remainingTotalTime]);
+  // useEffect(() => {
+  //   if (remainingTotalTime <= 0) {
+  //     endGame();
+  //   }
+  // }, [remainingTotalTime]);
 
   useEffect(() => {
     const correctIndex = Math.floor(Math.random() * 3);
@@ -127,19 +211,17 @@ function App() {
     >
       <div className={styles.main}>
         <SideBar />
-        <Container>
+        <div className={styles.container}>
           <div>
             <h2>Guess the color</h2>
             <GameBoard />
             <ProgressBar />
             <ColorBoard bgColor={currentColor}>
-              {!isActiveGame ? (
-                <button onClick={startGame}>Start</button>
-              ) : null}
+              {!isActiveGame && <button onClick={startGame}>Start</button>}
             </ColorBoard>
             {isActiveGame && <SelectColor />}
           </div>
-        </Container>
+        </div>
       </div>
     </GameContext.Provider>
   );

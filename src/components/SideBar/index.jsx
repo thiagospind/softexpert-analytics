@@ -4,7 +4,7 @@ import { GameContext } from "../../context/GameContext";
 
 export const SideBar = () => {
   const { gameHistory } = useContext(GameContext);
-  console.log({ gameHistory });
+  // console.log({ gameHistory });
   return (
     <aside className={styles.sidebar}>
       <h3>Current/Latest game</h3>
@@ -17,41 +17,35 @@ export const SideBar = () => {
         </div>
       </div>
       {gameHistory &&
-        gameHistory.reverse().map((item, index) => {
-          return item.correct ? (
-            <>
+        gameHistory.map((item, index) => {
+          return (
+            <div key={index} className={styles.containerAnswers}>
+              {!item.correct && (
+                <div
+                  className={styles.answers}
+                  style={{
+                    backgroundColor: item.color,
+                    color: item.fontColor,
+                  }}
+                >
+                  {item.color}
+                </div>
+              )}
               <div
-                key={index}
-                className={styles.containerAnswers}
-                style={{
-                  backgroundColor: item.color,
-                  // opacity: item.correct ? 1 : 0.5,
-                }}
-              >
-                {item.color}
-              </div>
-              <div>{item.time}</div>
-            </>
-          ) : (
-            <div key={index} className={styles.wrongAnswer}>
-              <div
-                className={styles.containerAnswers}
-                style={{
-                  backgroundColor: item.color,
-                  // opacity: item.correct ? 1 : 0.5,
-                }}
-              >
-                {item.color}
-              </div>
-              <div
-                className={styles.containerAnswers}
+                className={styles.answers}
                 style={{
                   backgroundColor: item.currentColor,
-                  // opacity: item.correct ? 1 : 0.5,
+                  color: item.currentFontColor,
                 }}
               >
                 {item.currentColor}
               </div>
+              <img
+                className={styles.icon}
+                src={item.correct ? "/icons/done.svg" : "/icons/wrong.svg"}
+                alt=""
+              />
+              <div className={styles.time}>{item.time}</div>
             </div>
           );
         })}
