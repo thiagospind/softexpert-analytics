@@ -1,7 +1,7 @@
 .sidebar {
   // display: flex;
   // flex-direction: column;
-  width: 350px;          
+  // width: 350px;          
   background-color: #ccc;       
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); 
   overflow-y: auto;  
@@ -30,6 +30,9 @@
 .itemHeader:first-child {
   border-right-width: 1px;
 }
+.itemHeader:last-child {
+  border-left-width: 1px;
+}
 
 .containerAnswers {
   display: flex;
@@ -37,7 +40,7 @@
   align-items: center;    
   background-color: #d1d1d1;  
   padding: 10px;  
-  width: 90%;
+  width: 300px;
 }
 
 .answers {
@@ -58,4 +61,6 @@
 
 .time {
   padding: 5px;
+  width: 5px;
+  margin: 5px;
 }

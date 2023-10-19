@@ -8,11 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import { ProgressBar } from "./components/ProgressBar";
 import { ColorBoard } from "./components/ColorBoard";
 import { SelectColor } from "./components/SelectColor";
-
-const generateRandomColor = () => {
-  const randomColor = Math.floor(Math.random() * 16797215).toString(16);
-  return `#${randomColor}`;
-};
+import { generateRandomColor } from "./utils/generateHexColors";
 
 const getHighScore = () => {
   return localStorage.getItem("highScore") || 0;
@@ -24,9 +20,8 @@ const saveLocalHighScore = (score) => {
 
 const loadLastGame = () => {
   const lastGame = localStorage.getItem("lastGame");
-  if (lastGame) {
-    return JSON.parse(lastGame) || [];
-  }
+  console.log({ lastGame });
+  return lastGame != "undefined" ? JSON.parse(lastGame) : [];
 };
 
 function App() {
@@ -38,12 +33,7 @@ function App() {
   // const [intervalId, setIntervalId] = useState();
   const [currentColor, setCurrentColor] = useState();
   const [colorOptions, setColorOptions] = useState([]);
-  const [gameHistory, setGameHistory] = useState(loadLastGame());
-
-  const saveLastGame = () => {
-    console.log(gameHistory);
-    localStorage.setItem("lastGame", JSON.stringify(gameHistory));
-  };
+  const [gameHistory, setGameHistory] = useState(loadLastGame() || []);
 
   const startGame = () => {
     setIsActiveGame(true);
@@ -65,9 +55,14 @@ function App() {
       setHighScore(score);
       saveLocalHighScore(score);
     }
-    console.log({ gameHistory });
-    setGameHistory(gameHistory);
-    saveLastGame();
+  };
+
+  const resetData = () => {
+    localStorage.removeItem("lastGame");
+    localStorage.removeItem("highScore");
+    setHighScore(0);
+    setGameHistory([]);
+    endGame();
   };
 
   const fontColorByLuminosity = (hex) => {
@@ -132,8 +127,15 @@ function App() {
   };
 
   useEffect(() => {
-    console.log({ gameHistory });
+    localStorage.setItem("lastGame", JSON.stringify(gameHistory));
   }, [gameHistory]);
+
+  useEffect(() => {
+    if (score > highScore) {
+      setHighScore(score);
+      saveLocalHighScore(score);
+    }
+  }, [score, highScore]);
 
   const intervalRef = useRef(null);
 
@@ -176,12 +178,6 @@ function App() {
     }
   }, [isActiveGame, currentColor]);
 
-  // useEffect(() => {
-  //   if (remainingTotalTime <= 0) {
-  //     endGame();
-  //   }
-  // }, [remainingTotalTime]);
-
   useEffect(() => {
     const correctIndex = Math.floor(Math.random() * 3);
     const newOptions = [
@@ -220,6 +216,9 @@ function App() {
               {!isActiveGame && <button onClick={startGame}>Start</button>}
             </ColorBoard>
             {isActiveGame && <SelectColor />}
+            <div className={styles.resetData} onClick={resetData}>
+              Reset all data
+            </div>
           </div>
         </div>
       </div>

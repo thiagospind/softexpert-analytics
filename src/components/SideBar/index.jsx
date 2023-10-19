@@ -15,6 +15,9 @@ export const SideBar = () => {
         <div className={styles.itemHeader}>
           <h5>Currect Color</h5>
         </div>
+        <div className={styles.itemHeader}>
+          <h5>Correct / Time</h5>
+        </div>
       </div>
       {gameHistory &&
         gameHistory.map((item, index) => {

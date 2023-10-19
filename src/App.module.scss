@@ -14,3 +14,16 @@
   align-items: center;
   flex-direction: row;
 }
+
+.resetData {
+  position: flex;  
+  font-size: 18px;  
+  font-style: oblique;
+  text-decoration: underline;  
+  justify-content: center;  
+  margin-top: 20px;
+}
+
+.resetData:hover {
+  cursor: pointer;  
+}
