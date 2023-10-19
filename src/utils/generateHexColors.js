@@ -6,7 +6,7 @@ export const generateRandomColor = () => {
   return randomColor;
 };
 
-const validateHexColor = (hexColor) => {
+export const validateHexColor = (hexColor) => {
   if (!/^#[0-9A-Fa-f]{6}$/.test(hexColor)) {
     return false;
   }
